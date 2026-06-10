@@ -14,30 +14,34 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <section className="rise rounded-xl border border-line bg-panel">
-      <header className="flex items-center justify-between gap-2 border-b border-line px-4 py-2.5">
-        <h2 className="flex items-center gap-2 text-[13px] font-semibold tracking-wide text-mut uppercase">
+    <section className="rise rounded-2xl bg-panel">
+      <header className="flex items-center justify-between gap-2 px-4 pt-3.5 pb-1">
+        <h2 className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
           {title}
           {badge}
         </h2>
         {action}
       </header>
-      <div className="p-3">{children}</div>
+      <div className="px-3 pb-3">{children}</div>
     </section>
   );
 }
 
-export function CountBadge({ n, tone = "acc" }: { n: number; tone?: "acc" | "warn" | "danger" }) {
+export function CountBadge({ n, tone = "mut" }: { n: number; tone?: "mut" | "acc" | "warn" | "danger" }) {
   const color =
-    tone === "danger" ? "text-danger border-danger/40" : tone === "warn" ? "text-warn border-warn/40" : "text-acc border-acc/40";
-  return (
-    <span className={`rounded-full border px-1.5 font-mono text-[11px] leading-4 ${color}`}>{n}</span>
-  );
+    tone === "danger"
+      ? "text-danger"
+      : tone === "warn"
+        ? "text-warn"
+        : tone === "acc"
+          ? "text-acc"
+          : "text-dim";
+  return <span className={`font-mono text-[13px] font-medium ${color}`}>{n}</span>;
 }
 
 export function Loading({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="flex items-center gap-2 px-1 py-3 text-[13px] text-dim">
+    <div className="flex items-center gap-2 px-1.5 py-3 text-[13px] text-dim">
       <span className="size-3 animate-spin rounded-full border border-dim border-t-transparent" />
       {label}
     </div>
@@ -46,14 +50,12 @@ export function Loading({ label = "Loading…" }: { label?: string }) {
 
 export function ErrorNote({ message }: { message: string }) {
   return (
-    <p className="rounded-md border border-danger/30 bg-danger/10 px-2.5 py-1.5 text-[12px] text-danger">
-      {message}
-    </p>
+    <p className="rounded-lg bg-danger/10 px-3 py-2 text-[12.5px] text-danger">{message}</p>
   );
 }
 
 export function Empty({ label }: { label: string }) {
-  return <p className="px-1 py-3 text-[13px] text-dim">{label}</p>;
+  return <p className="px-1.5 py-3 text-[13px] text-dim">{label}</p>;
 }
 
 export function IconButton({
@@ -86,6 +88,7 @@ export function IconButton({
   );
 }
 
+/** Apple Reminders-style round checkbox: hollow ring -> filled accent circle. */
 export function CheckCircle({
   checked,
   onChange,
@@ -102,20 +105,25 @@ export function CheckCircle({
       aria-checked={checked}
       aria-label={label ?? "toggle"}
       onClick={() => onChange(!checked)}
-      className={`grid size-[18px] shrink-0 place-items-center rounded-full border transition-colors ${
-        checked ? "border-ok bg-ok/20 text-ok" : "border-line text-transparent hover:border-mut"
+      className={`grid size-[20px] shrink-0 place-items-center rounded-full border-[1.5px] transition-all ${
+        checked
+          ? "border-acc bg-acc text-white"
+          : "border-dim/70 text-transparent hover:border-mut"
       }`}
     >
-      <svg viewBox="0 0 12 12" className="size-2.5" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg viewBox="0 0 12 12" className="size-[10px]" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M2 6.5 4.5 9 10 3" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );
 }
 
-/** Base input styling — add `w-full`/`flex-1` (or a fixed width) at the call site. */
+/** Base input — frameless, iOS-style filled field. Size at the call site. */
 export const inputCls =
-  "rounded-md border border-line bg-panel2 px-2.5 py-1.5 text-[13px] text-ink placeholder:text-dim outline-none focus:border-acc/60";
+  "rounded-[10px] bg-panel2 px-3 py-1.5 text-[13px] text-ink placeholder:text-dim outline-none ring-acc/60 transition-shadow focus:ring-2";
 
 export const btnCls =
-  "rounded-md border border-line bg-panel2 px-2.5 py-1.5 text-[13px] text-ink transition-colors hover:border-acc/60 hover:text-acc disabled:opacity-50";
+  "rounded-[10px] bg-panel2 px-3 py-1.5 text-[13px] font-medium text-ink transition-colors hover:bg-line disabled:opacity-40";
+
+export const btnPrimaryCls =
+  "rounded-[10px] bg-acc px-3 py-1.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40";

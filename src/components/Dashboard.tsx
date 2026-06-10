@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card } from "./ui";
 import { TodayHero } from "./TodayHero";
-import { TasksCard } from "./TasksCard";
+import { TasksBoard } from "./TasksBoard";
 import { TeamTasksCard } from "./TeamTasksCard";
 import { IdeasCard } from "./IdeasCard";
 import { ShoppingList } from "./ShoppingList";
@@ -21,12 +21,13 @@ export function Dashboard({ today, sharePath }: { today: string; sharePath: stri
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-3 pt-4 pb-20 sm:px-5">
-      <header className="mb-4 flex items-center justify-between">
-        <p className="font-mono text-[13px] tracking-widest text-acc">LIFE://</p>
-        <nav className="flex items-center gap-3 text-[12px] text-dim">
+    <main className="mx-auto max-w-7xl px-3 pt-5 pb-20 sm:px-6">
+      <header className="mb-5 flex items-center justify-between px-1">
+        <p className="text-[17px] font-semibold tracking-tight">Life</p>
+        <nav className="flex items-center gap-4 text-[12.5px] text-dim">
           <span className="hidden sm:inline">
-            press <kbd className="rounded border border-line bg-panel2 px-1 font-mono">c</kbd> to capture
+            press <kbd className="rounded-md bg-panel2 px-1.5 py-0.5 font-mono text-[11px]">c</kbd> to
+            capture
           </span>
           <button
             type="button"
@@ -36,16 +37,16 @@ export function Dashboard({ today, sharePath }: { today: string; sharePath: stri
             }}
             className="transition-colors hover:text-ink"
           >
-            log out
+            Log out
           </button>
         </nav>
       </header>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         <TodayHero today={today} />
         <WeekView today={today} />
-        <div className="grid gap-4 md:grid-cols-2">
-          <TasksCard today={today} />
+        <TasksBoard today={today} />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <TeamTasksCard today={today} />
           <Card
             title="Shopping"
@@ -54,10 +55,10 @@ export function Dashboard({ today, sharePath }: { today: string; sharePath: stri
                 <button
                   type="button"
                   onClick={copyShare}
-                  className="text-[12px] text-dim transition-colors hover:text-acc"
+                  className="text-[12.5px] text-dim transition-colors hover:text-acc"
                   title="Copy the share link for the shopping list"
                 >
-                  {copied ? "link copied ✓" : "copy share link"}
+                  {copied ? "Link copied ✓" : "Copy share link"}
                 </button>
               ) : (
                 <span className="text-[11px] text-dim" title="Set SHOPPING_SHARE_TOKEN to enable sharing">

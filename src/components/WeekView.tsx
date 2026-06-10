@@ -51,8 +51,8 @@ export function WeekView({ today }: { today: string }) {
             return (
               <div
                 key={day}
-                className={`min-h-20 rounded-lg border p-1.5 ${
-                  day === today ? "border-acc/50 bg-acc/5" : "border-line bg-panel2/40"
+                className={`min-h-20 rounded-xl p-2 ${
+                  day === today ? "bg-acc/10 ring-1 ring-acc/40" : "bg-panel2/50"
                 }`}
               >
                 <p className={`mb-1 text-[11px] font-semibold ${day === today ? "text-acc" : "text-dim"}`}>

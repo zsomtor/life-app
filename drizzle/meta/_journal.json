@@ -8,6 +8,13 @@
       "when": 1781079632238,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781086049924,
+      "tag": "0001_task-categories",
+      "breakpoints": true
     }
   ]
 }

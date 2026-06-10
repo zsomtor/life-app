@@ -24,11 +24,11 @@ export default async function SharedShoppingPage({
 
   return (
     <main className="mx-auto max-w-md px-3 pt-6 pb-16 sm:px-4">
-      <header className="mb-4 flex items-baseline justify-between">
-        <h1 className="text-lg font-semibold tracking-tight">Shopping list 🛒</h1>
+      <header className="mb-4 flex items-baseline justify-between px-1">
+        <h1 className="text-[19px] font-semibold tracking-tight">Shopping list 🛒</h1>
         <span className="text-[11px] text-dim">live · refreshes automatically</span>
       </header>
-      <div className="rise rounded-xl border border-line bg-panel p-3">
+      <div className="rise rounded-2xl bg-panel p-3">
         <ShoppingList apiBase={`/api/share/shopping/${encodeURIComponent(shareToken)}`} pollMs={5000} />
       </div>
     </main>

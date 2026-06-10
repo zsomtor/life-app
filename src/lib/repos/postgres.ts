@@ -1,7 +1,7 @@
 import { and, eq, lte, sql } from "drizzle-orm";
 import { getDb } from "../db/client";
-import { ideas, shoppingItems, tasks } from "../db/schema";
-import type { Idea, IdeaStatus, Repos, ShoppingItem, Task } from "./types";
+import { ideas, shoppingItems, taskCategories, tasks } from "../db/schema";
+import type { Idea, IdeaStatus, Repos, ShoppingItem, Task, TaskCategory } from "./types";
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null);
 
@@ -12,6 +12,7 @@ function rowToTask(r: typeof tasks.$inferSelect): Task {
     notes: r.notes,
     dueDate: r.dueDate,
     done: r.done,
+    categoryId: r.categoryId,
     createdAt: r.createdAt.toISOString(),
     completedAt: iso(r.completedAt),
     sentToTeamAt: iso(r.sentToTeamAt),
@@ -41,6 +42,15 @@ function rowToIdea(r: typeof ideas.$inferSelect): Idea {
   };
 }
 
+function rowToCategory(r: typeof taskCategories.$inferSelect): TaskCategory {
+  return {
+    id: r.id,
+    name: r.name,
+    position: r.position,
+    createdAt: r.createdAt.toISOString(),
+  };
+}
+
 const toDate = (v: string | null | undefined): Date | null | undefined =>
   v === undefined ? undefined : v === null ? null : new Date(v);
 
@@ -66,7 +76,12 @@ export function createPostgresRepos(): Repos {
       async create(data) {
         const rows = await getDb()
           .insert(tasks)
-          .values({ title: data.title, notes: data.notes ?? null, dueDate: data.dueDate ?? null })
+          .values({
+            title: data.title,
+            notes: data.notes ?? null,
+            dueDate: data.dueDate ?? null,
+            categoryId: data.categoryId ?? null,
+          })
           .returning();
         return rowToTask(rows[0]);
       },
@@ -78,6 +93,7 @@ export function createPostgresRepos(): Repos {
             notes: patch.notes,
             dueDate: patch.dueDate,
             done: patch.done,
+            categoryId: patch.categoryId,
             completedAt: toDate(patch.completedAt),
             sentToTeamAt: toDate(patch.sentToTeamAt),
             teamTaskId: patch.teamTaskId,
@@ -88,6 +104,43 @@ export function createPostgresRepos(): Repos {
       },
       async delete(id) {
         const rows = await getDb().delete(tasks).where(eq(tasks.id, id)).returning({ id: tasks.id });
+        return rows.length > 0;
+      },
+    },
+
+    categories: {
+      async list() {
+        const rows = await getDb()
+          .select()
+          .from(taskCategories)
+          .orderBy(sql`${taskCategories.position} asc, ${taskCategories.createdAt} asc`);
+        return rows.map(rowToCategory);
+      },
+      async get(id) {
+        const rows = await getDb().select().from(taskCategories).where(eq(taskCategories.id, id)).limit(1);
+        return rows[0] ? rowToCategory(rows[0]) : null;
+      },
+      async create(data) {
+        const rows = await getDb()
+          .insert(taskCategories)
+          .values({ name: data.name, position: data.position ?? 0 })
+          .returning();
+        return rowToCategory(rows[0]);
+      },
+      async update(id, patch) {
+        const rows = await getDb()
+          .update(taskCategories)
+          .set({ name: patch.name, position: patch.position })
+          .where(eq(taskCategories.id, id))
+          .returning();
+        return rows[0] ? rowToCategory(rows[0]) : null;
+      },
+      async delete(id) {
+        // FK has ON DELETE SET NULL, so tasks fall back to the default column.
+        const rows = await getDb()
+          .delete(taskCategories)
+          .where(eq(taskCategories.id, id))
+          .returning({ id: taskCategories.id });
         return rows.length > 0;
       },
     },

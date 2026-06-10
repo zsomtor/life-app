@@ -9,6 +9,7 @@ export const taskCreateSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "dueDate must be YYYY-MM-DD")
     .nullish(),
+  categoryId: z.string().uuid().nullish(),
 });
 
 export const taskUpdateSchema = z.object({
@@ -20,6 +21,7 @@ export const taskUpdateSchema = z.object({
     .nullable()
     .optional(),
   done: z.boolean().optional(),
+  categoryId: z.string().uuid().nullable().optional(),
 });
 
 export type TaskCreateInput = z.infer<typeof taskCreateSchema>;

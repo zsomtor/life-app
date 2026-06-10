@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import type { Idea, IdeaStatus, Repos, ShoppingItem, Task } from "./types";
+import type { Idea, IdeaStatus, Repos, ShoppingItem, Task, TaskCategory } from "./types";
 
 /**
  * In-memory repos. Used for tests and as a zero-config dev fallback when
@@ -8,6 +8,7 @@ import type { Idea, IdeaStatus, Repos, ShoppingItem, Task } from "./types";
  */
 export function createMemoryRepos(): Repos {
   const tasks = new Map<string, Task>();
+  const categories = new Map<string, TaskCategory>();
   const shopping = new Map<string, ShoppingItem>();
   const ideas = new Map<string, Idea>();
 
@@ -33,6 +34,7 @@ export function createMemoryRepos(): Repos {
           notes: data.notes ?? null,
           dueDate: data.dueDate ?? null,
           done: false,
+          categoryId: data.categoryId ?? null,
           createdAt: new Date().toISOString(),
           completedAt: null,
           sentToTeamAt: null,
@@ -50,6 +52,39 @@ export function createMemoryRepos(): Repos {
       },
       async delete(id) {
         return tasks.delete(id);
+      },
+    },
+
+    categories: {
+      async list() {
+        return [...categories.values()].sort((a, b) => a.position - b.position || a.createdAt.localeCompare(b.createdAt));
+      },
+      async get(id) {
+        return categories.get(id) ?? null;
+      },
+      async create(data) {
+        const cat: TaskCategory = {
+          id: randomUUID(),
+          name: data.name,
+          position: data.position ?? categories.size,
+          createdAt: new Date().toISOString(),
+        };
+        categories.set(cat.id, cat);
+        return cat;
+      },
+      async update(id, patch) {
+        const cur = categories.get(id);
+        if (!cur) return null;
+        const next = { ...cur, ...patch };
+        categories.set(id, next);
+        return next;
+      },
+      async delete(id) {
+        if (!categories.delete(id)) return false;
+        for (const [tid, t] of tasks) {
+          if (t.categoryId === id) tasks.set(tid, { ...t, categoryId: null });
+        }
+        return true;
       },
     },
 

@@ -1,4 +1,11 @@
-import { boolean, date, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+export const taskCategories = pgTable("task_categories", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  position: integer("position").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -6,6 +13,8 @@ export const tasks = pgTable("tasks", {
   notes: text("notes"),
   dueDate: date("due_date"),
   done: boolean("done").notNull().default(false),
+  // Null = the default "General" column.
+  categoryId: uuid("category_id").references(() => taskCategories.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   completedAt: timestamp("completed_at", { withTimezone: true }),
   // Set when the task was pushed to the team task manager.

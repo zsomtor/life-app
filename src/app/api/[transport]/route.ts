@@ -6,6 +6,7 @@ import { todayString } from "@/lib/time";
 import { createTask, listTasks, updateTask } from "@/lib/services/tasks";
 import { addShoppingItem, listShopping, updateShoppingItem } from "@/lib/services/shopping";
 import { addIdea, listIdeas } from "@/lib/services/ideas";
+import { createCategory, listCategories } from "@/lib/services/categories";
 import { getTodayBriefing } from "@/lib/services/briefing";
 import {
   addTeamTask,
@@ -32,8 +33,11 @@ const handler = createMcpHandler(
       "Get personal tasks from the life dashboard. Defaults to open tasks; pass include_done=true for completed ones too.",
       { include_done: z.boolean().optional() },
       async ({ include_done }) => {
-        const tasks = await listTasks(include_done ? undefined : { done: false });
-        return json({ today: todayString(), tasks });
+        const [tasks, categories] = await Promise.all([
+          listTasks(include_done ? undefined : { done: false }),
+          listCategories(),
+        ]);
+        return json({ today: todayString(), categories, tasks });
       }
     );
 
@@ -44,9 +48,19 @@ const handler = createMcpHandler(
         title: z.string().min(1),
         notes: z.string().optional(),
         due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        category: z
+          .string()
+          .optional()
+          .describe("Optional column/category name (e.g. Content, Home); created if it doesn't exist"),
       },
-      async ({ title, notes, due_date }) => {
-        const task = await createTask({ title, notes: notes ?? null, dueDate: due_date ?? null });
+      async ({ title, notes, due_date, category }) => {
+        const categoryId = category ? (await createCategory({ name: category })).id : null;
+        const task = await createTask({
+          title,
+          notes: notes ?? null,
+          dueDate: due_date ?? null,
+          categoryId,
+        });
         return json({ task });
       }
     );

@@ -5,12 +5,21 @@
  * added here for the home-server setup without touching services or routes.
  */
 
+export type TaskCategory = {
+  id: string;
+  name: string;
+  position: number;
+  createdAt: string;
+};
+
 export type Task = {
   id: string;
   title: string;
   notes: string | null;
   dueDate: string | null; // YYYY-MM-DD
   done: boolean;
+  /** Null = default "General" column. */
+  categoryId: string | null;
   createdAt: string; // ISO
   completedAt: string | null;
   sentToTeamAt: string | null;
@@ -40,8 +49,22 @@ export type Idea = {
 export interface TaskRepo {
   list(filter?: { done?: boolean; dueOnOrBefore?: string }): Promise<Task[]>;
   get(id: string): Promise<Task | null>;
-  create(data: { title: string; notes?: string | null; dueDate?: string | null }): Promise<Task>;
+  create(data: {
+    title: string;
+    notes?: string | null;
+    dueDate?: string | null;
+    categoryId?: string | null;
+  }): Promise<Task>;
   update(id: string, patch: Partial<Omit<Task, "id" | "createdAt">>): Promise<Task | null>;
+  delete(id: string): Promise<boolean>;
+}
+
+export interface CategoryRepo {
+  list(): Promise<TaskCategory[]>;
+  get(id: string): Promise<TaskCategory | null>;
+  create(data: { name: string; position?: number }): Promise<TaskCategory>;
+  update(id: string, patch: Partial<Omit<TaskCategory, "id" | "createdAt">>): Promise<TaskCategory | null>;
+  /** Deleting a category moves its tasks to the default column (categoryId=null). */
   delete(id: string): Promise<boolean>;
 }
 
@@ -64,6 +87,7 @@ export interface IdeaRepo {
 
 export interface Repos {
   tasks: TaskRepo;
+  categories: CategoryRepo;
   shopping: ShoppingRepo;
   ideas: IdeaRepo;
 }
