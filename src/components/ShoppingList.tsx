@@ -77,7 +77,7 @@ export function ShoppingList({ apiBase, pollMs = 10_000 }: { apiBase: string; po
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Add item…"
-          className={inputCls}
+          className={`${inputCls} min-w-0 flex-1`}
         />
         <input
           value={qty}
@@ -86,6 +86,8 @@ export function ShoppingList({ apiBase, pollMs = 10_000 }: { apiBase: string; po
           aria-label="Quantity"
           className={`${inputCls} w-16 shrink-0`}
         />
+        {/* keeps Enter-to-submit working: forms with 2+ fields need a submit button */}
+        <button type="submit" hidden aria-hidden />
       </form>
       {actionError && <ErrorNote message={actionError} />}
       {loading && !data ? (

@@ -113,8 +113,9 @@ export function CheckCircle({
   );
 }
 
+/** Base input styling — add `w-full`/`flex-1` (or a fixed width) at the call site. */
 export const inputCls =
-  "w-full rounded-md border border-line bg-panel2 px-2.5 py-1.5 text-[13px] text-ink placeholder:text-dim outline-none focus:border-acc/60";
+  "rounded-md border border-line bg-panel2 px-2.5 py-1.5 text-[13px] text-ink placeholder:text-dim outline-none focus:border-acc/60";
 
 export const btnCls =
   "rounded-md border border-line bg-panel2 px-2.5 py-1.5 text-[13px] text-ink transition-colors hover:border-acc/60 hover:text-acc disabled:opacity-50";

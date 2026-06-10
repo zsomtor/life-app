@@ -70,15 +70,17 @@ export function TasksCard({ today }: { today: string }) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Add a task…"
-          className={inputCls}
+          className={`${inputCls} min-w-0 flex-1`}
         />
         <input
           type="date"
           value={due}
           onChange={(e) => setDue(e.target.value)}
           aria-label="Due date"
-          className={`${inputCls} w-auto shrink-0 font-mono text-[12px]`}
+          className={`${inputCls} shrink-0 font-mono text-[12px]`}
         />
+        {/* keeps Enter-to-submit working: forms with 2+ fields need a submit button */}
+        <button type="submit" hidden aria-hidden />
       </form>
       {actionError && <ErrorNote message={actionError} />}
       {loading && !data ? (

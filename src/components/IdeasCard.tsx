@@ -87,7 +87,7 @@ export function IdeasCard() {
             }}
             placeholder="Dump an idea… (Enter to save, Shift+Enter for newline)"
             rows={2}
-            className={`${inputCls} resize-none`}
+            className={`${inputCls} w-full resize-none`}
           />
         </form>
       )}

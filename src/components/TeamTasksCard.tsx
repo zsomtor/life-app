@@ -97,11 +97,11 @@ export function TeamTasksCard({ today }: { today: string }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Team task title…"
-            className={inputCls}
+            className={`${inputCls} w-full`}
             autoFocus
           />
           <div className="flex flex-wrap gap-1.5">
-            <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className={`${inputCls} w-auto`}>
+            <select value={assignee} onChange={(e) => setAssignee(e.target.value)} className={inputCls}>
               {MEMBERS.map((m) => (
                 <option key={m}>{m}</option>
               ))}
@@ -110,12 +110,12 @@ export function TeamTasksCard({ today }: { today: string }) {
               type="date"
               value={due}
               onChange={(e) => setDue(e.target.value)}
-              className={`${inputCls} w-auto font-mono text-[12px]`}
+              className={`${inputCls} font-mono text-[12px]`}
             />
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as (typeof PRIORITIES)[number])}
-              className={`${inputCls} w-auto`}
+              className={inputCls}
             >
               {PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>

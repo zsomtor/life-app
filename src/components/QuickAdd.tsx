@@ -116,7 +116,7 @@ export function QuickAdd() {
               placeholder={
                 mode === "task" ? "Task title…" : mode === "idea" ? "Brain dump…" : "Shopping item…"
               }
-              className={`${inputCls} resize-none text-[14px]`}
+              className={`${inputCls} w-full resize-none text-[14px]`}
             />
             {mode === "task" && (
               <div className="mt-2 flex items-center gap-1.5">
@@ -125,7 +125,7 @@ export function QuickAdd() {
                   value={due}
                   onChange={(e) => setDue(e.target.value)}
                   aria-label="Due date"
-                  className={`${inputCls} w-auto font-mono text-[12px]`}
+                  className={`${inputCls} font-mono text-[12px]`}
                 />
                 <button type="button" onClick={submit} disabled={busy || !text.trim()} className={btnCls}>
                   Add task
