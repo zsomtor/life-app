@@ -67,7 +67,7 @@ All under `/api/v1/*`. Auth: session cookie (browser) **or**
 | `/api/v1/ideas/:id` | PATCH, DELETE | `{action: archive\|restore\|convert_task\|convert_shopping}` |
 | `/api/v1/calendar` | GET | `?range=today\|week`, merged Google+Notion |
 | `/api/v1/briefing/today` | GET | the one-call daily aggregate |
-| `/api/v1/stats` | GET | PHASE 2 placeholders (newsletter / YouTube) |
+| `/api/v1/stats` | GET | newsletter (flagged) + video stats from the analytics sheet |
 | `/api/cron/briefing` | GET | cron target; needs `CRON_SECRET` or API token |
 
 Public share (no login, token-scoped to shopping only):
@@ -85,7 +85,8 @@ changing `SHOPPING_SHARE_TOKEN` in Vercel env (old link dies instantly).
 The MCP server runs inside the app at `/api/mcp` (streamable HTTP). Tools:
 `get_tasks`, `add_task`, `complete_task`, `get_team_tasks`, `add_team_task`,
 `complete_team_task`, `get_shopping`, `add_shopping_item`,
-`check_shopping_item`, `add_idea`, `list_ideas`, `get_today_briefing`.
+`check_shopping_item`, `add_idea`, `list_ideas`, `get_video_stats`,
+`get_today_briefing`.
 
 **claude.ai / Claude apps (custom connector):** Settings → Connectors → Add
 custom connector, URL:
@@ -112,8 +113,10 @@ list" → `add_shopping_item`. Same data the web UI shows, live.
 1. console.cloud.google.com → create project (e.g. `life-dashboard`).
 2. **APIs & Services → Library** → enable **Google Calendar API**.
 3. **OAuth consent screen**: External, fill app name + your email; add
-   yourself under **Test users**. Scope to add:
-   `https://www.googleapis.com/auth/calendar.readonly`.
+   yourself under **Test users**. Scopes to add:
+   `https://www.googleapis.com/auth/calendar.readonly` and
+   `https://www.googleapis.com/auth/spreadsheets.readonly` (the latter feeds
+   the video-stats card/briefing from the BAZU analytics sheet).
    Note: while the consent screen is in *Testing* mode Google expires refresh
    tokens after 7 days — click **Publish app** (it can stay unverified for
    your own use) to get long-lived refresh tokens.
@@ -122,7 +125,8 @@ list" → `add_shopping_item`. Same data the web UI shows, live.
    Copy client id/secret → `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
 5. Get a refresh token via the OAuth Playground:
    developers.google.com/oauthplayground → ⚙ → check **Use your own OAuth
-   credentials**, paste id+secret → in Step 1 enter the scope above →
+   credentials**, paste id+secret → in Step 1 enter BOTH scopes above
+   (space-separated) →
    Authorize → Step 2 **Exchange authorization code for tokens** → copy the
    **refresh token** → `GOOGLE_REFRESH_TOKEN`.
 6. `GOOGLE_CALENDAR_IDS=primary` (or add more ids from Google Calendar →
@@ -149,6 +153,18 @@ a different route, adjust `completeTeamTask()` in
 `src/lib/integrations/team-tasks.ts`. If the API needs `assigned_phone`,
 set `TEAM_PHONE_MAP` (kept out of the repo on purpose).
 
+## Video stats (BAZU analytics sheet)
+
+Per-video views / CTR / retention come straight from the team's analytics
+Google Sheet (the data behind bazu-analytics.vercel.app) — no YouTube API
+needed. Set `ANALYTICS_SHEET_ID` (pre-filled in `.env.example`) and make sure
+the Google refresh token was minted with the `spreadsheets.readonly` scope.
+Surfaces: `get_video_stats` MCP tool, `/api/v1/stats`, and a `videoStats`
+section inside the daily briefing aggregate (totals, last-30-days long-form
+vs shorts, top videos). Views are cumulative per video — the sheet has no
+daily deltas, so "monthly views" means views of videos published in the last
+30 days.
+
 ## Daily briefing
 
 - **Primary path:** your Claude copilot calls `get_today_briefing` (MCP) or
@@ -166,11 +182,9 @@ set `TEAM_PHONE_MAP` (kept out of the repo on purpose).
 
 - **Newsletter subscriber count** (MailerLite) — implemented but feature-
   flagged off; flip `STATS_NEWSLETTER_ENABLED=true` + `MAILERLITE_API_KEY`.
-- **YouTube monthly long-form views** — scaffolded only
-  (`src/lib/integrations/phase2-stats.ts` documents the Analytics API +
-  duration-filter approach and the OAuth needed); behind `STATS_YOUTUBE_ENABLED`.
-- **Dashboard stats card** — `/api/v1/stats` already returns the shape; a card
-  just needs to render it.
+- **Dashboard stats card** — `/api/v1/stats` already returns the shape
+  (newsletter + video stats); a card just needs to render it.
+- ~~YouTube Analytics API~~ — superseded by the analytics-sheet integration.
 - **File-based storage driver** for the home server — extension point marked
   in `src/lib/repos/index.ts`.
 

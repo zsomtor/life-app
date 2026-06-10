@@ -7,6 +7,11 @@ import { createTask, listTasks, updateTask } from "@/lib/services/tasks";
 import { addShoppingItem, listShopping, updateShoppingItem } from "@/lib/services/shopping";
 import { addIdea, listIdeas } from "@/lib/services/ideas";
 import { createCategory, listCategories } from "@/lib/services/categories";
+import {
+  getVideoStats,
+  summarizeVideos,
+  videoStatsConfigured,
+} from "@/lib/integrations/analytics-sheet";
 import { getTodayBriefing } from "@/lib/services/briefing";
 import {
   addTeamTask,
@@ -158,6 +163,20 @@ const handler = createMcpHandler(
       async ({ status }) => {
         const ideas = await listIdeas({ status: status ?? "inbox" });
         return json({ ideas });
+      }
+    );
+
+    server.tool(
+      "get_video_stats",
+      "YouTube video performance from the BAZU analytics sheet: per-video views, CTR, retention (APV), type (PODCAST/UTCAI/DIAL/SHORT). Returns a summary (totals, last-30-days, top videos); pass include_all=true for every video.",
+      { include_all: z.boolean().optional() },
+      async ({ include_all }) => {
+        if (!videoStatsConfigured()) {
+          return json({ configured: false, note: "Set ANALYTICS_SHEET_ID + Google OAuth (spreadsheets.readonly)" });
+        }
+        const videos = await getVideoStats();
+        const summary = summarizeVideos(videos, todayString());
+        return json(include_all ? { configured: true, summary, videos } : { configured: true, summary });
       }
     );
 

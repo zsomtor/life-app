@@ -1,24 +1,29 @@
 import { NextResponse } from "next/server";
 import { withApiAuth } from "@/lib/api-auth";
-import {
-  getNewsletterSubscribers,
-  getYoutubeMonthlyLongformViews,
-} from "@/lib/integrations/phase2-stats";
+import { getNewsletterSubscribers } from "@/lib/integrations/phase2-stats";
+import { getVideoStats, summarizeVideos, videoStatsConfigured } from "@/lib/integrations/analytics-sheet";
+import { todayString } from "@/lib/time";
 
-/** PHASE 2 hook — returns disabled placeholders until providers are configured. */
 export const GET = withApiAuth(async () => {
-  const [newsletter, youtube] = await Promise.allSettled([
+  const [newsletter, videos] = await Promise.allSettled([
     getNewsletterSubscribers(),
-    getYoutubeMonthlyLongformViews(),
+    videoStatsConfigured() ? getVideoStats() : Promise.resolve([]),
   ]);
   return NextResponse.json({
     newsletter:
       newsletter.status === "fulfilled"
         ? newsletter.value
         : { enabled: true, label: "Newsletter subscribers", note: String(newsletter.reason) },
-    youtube:
-      youtube.status === "fulfilled"
-        ? youtube.value
-        : { enabled: true, label: "YouTube monthly views (long-form)", note: String(youtube.reason) },
+    videos:
+      videos.status === "fulfilled"
+        ? {
+            enabled: videoStatsConfigured(),
+            label: "Video stats (BAZU analytics sheet)",
+            ...(videoStatsConfigured() ? summarizeVideos(videos.value, todayString()) : {}),
+            ...(videoStatsConfigured()
+              ? {}
+              : { note: "Set ANALYTICS_SHEET_ID + Google OAuth with spreadsheets.readonly scope" }),
+          }
+        : { enabled: true, label: "Video stats (BAZU analytics sheet)", note: String(videos.reason) },
   });
 });

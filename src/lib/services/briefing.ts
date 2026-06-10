@@ -4,6 +4,11 @@ import { getRepos } from "../repos";
 import type { Repos } from "../repos/types";
 import { getEventsForRange } from "../integrations/calendar";
 import { getTeamTasks, teamTasksConfigured } from "../integrations/team-tasks";
+import {
+  getVideoStats,
+  summarizeVideos,
+  videoStatsConfigured,
+} from "../integrations/analytics-sheet";
 import { todayTasks } from "./tasks";
 
 /**
@@ -16,11 +21,12 @@ export async function getTodayBriefing(repos: Repos = getRepos()) {
   const date = todayString();
   const errors: { source: string; message: string }[] = [];
 
-  const [personal, team, calendar, inbox] = await Promise.allSettled([
+  const [personal, team, calendar, inbox, videos] = await Promise.allSettled([
     todayTasks(date, repos),
     teamTasksConfigured() ? getTeamTasks() : Promise.resolve([]),
     getEventsForRange("today"),
     repos.ideas.countInbox(),
+    videoStatsConfigured() ? getVideoStats() : Promise.resolve([]),
   ]);
 
   if (personal.status === "rejected")
@@ -32,6 +38,8 @@ export async function getTodayBriefing(repos: Repos = getRepos()) {
   else errors.push(...calendar.value.errors);
   if (inbox.status === "rejected")
     errors.push({ source: "idea_inbox", message: String(inbox.reason) });
+  if (videos.status === "rejected")
+    errors.push({ source: "video_stats", message: String(videos.reason) });
 
   const teamTasks = team.status === "fulfilled" ? team.value : [];
   const openTeam = teamTasks.filter((t) => t.status === "open");
@@ -52,6 +60,10 @@ export async function getTodayBriefing(repos: Repos = getRepos()) {
     },
     calendar: calendar.status === "fulfilled" ? calendar.value.events : [],
     ideaInboxCount: inbox.status === "fulfilled" ? inbox.value : 0,
+    videoStats:
+      videos.status === "fulfilled" && videoStatsConfigured()
+        ? { configured: true as const, ...summarizeVideos(videos.value, date) }
+        : { configured: false as const },
     errors,
   };
 }

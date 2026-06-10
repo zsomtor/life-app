@@ -28,25 +28,6 @@ export async function getNewsletterSubscribers(): Promise<StatValue> {
   return { enabled: true, label, value: data.total ?? data.meta?.total ?? 0 };
 }
 
-/**
- * PHASE 2: YouTube monthly views, long-form only.
- * Needs the YouTube Analytics API (OAuth as channel owner) for per-video
- * monthly views, joined with video durations from the YouTube Data API to
- * filter out Shorts (< 60s). All free, but requires its own OAuth consent
- * setup — see README "Phase 2" for the click-by-click steps.
- * Enable with STATS_YOUTUBE_ENABLED=true + YOUTUBE_CLIENT_ID,
- * YOUTUBE_CLIENT_SECRET, YOUTUBE_REFRESH_TOKEN, YOUTUBE_CHANNEL_ID.
- */
-export async function getYoutubeMonthlyLongformViews(): Promise<StatValue> {
-  const label = "YouTube monthly views (long-form)";
-  if (!flag("STATS_YOUTUBE_ENABLED")) {
-    return { enabled: false, label, note: "Set STATS_YOUTUBE_ENABLED + YOUTUBE_* env vars" };
-  }
-  // PHASE 2: implement
-  //  1. refresh access token (same flow as google-calendar.ts, youtube scopes)
-  //  2. youtubeAnalytics.reports.query: dimensions=video, metrics=views,
-  //     startDate=first of month, endDate=today, sort=-views
-  //  3. videos.list(part=contentDetails) for durations; drop ISO8601 < 60s
-  //  4. sum remaining views
-  return { enabled: false, label, note: "Not implemented yet (Phase 2)" };
-}
+// Note: YouTube video stats moved out of Phase 2 — they now come live from the
+// BAZU analytics Google Sheet (see analytics-sheet.ts). The YouTube Analytics
+// API route is no longer planned unless per-day view deltas are needed.
