@@ -33,7 +33,9 @@ restart) — handy for trying it out. Tests: `npm run test:run`.
 
 1. Create a project at neon.tech, copy the **pooled** connection string.
 2. Set `DATABASE_URL` in `.env.local` (and later in Vercel).
-3. Apply migrations: `npm run db:migrate` (migrations live in `drizzle/`).
+3. Migrations apply automatically as part of `npm run build` whenever
+   `DATABASE_URL` is set (see `scripts/migrate.mjs`); to run them manually:
+   `npm run db:migrate` (migrations live in `drizzle/`).
 
 ## Deploy to Vercel
 
@@ -41,8 +43,9 @@ restart) — handy for trying it out. Tests: `npm run test:run`.
 2. Add the env vars from `.env.example` (Project → Settings → Environment
    Variables). Minimum: `DATABASE_URL`, `AUTH_SECRET`, `DASHBOARD_PASSWORD`,
    `DASHBOARD_API_TOKEN`, `SHOPPING_SHARE_TOKEN`.
-3. Run `npm run db:migrate` once locally against the prod `DATABASE_URL`.
-4. Deploy. `vercel.json` registers the optional daily-briefing cron
+3. Deploy — migrations run automatically during the build when
+   `DATABASE_URL` is present.
+4.  `vercel.json` registers the optional daily-briefing cron
    (05:00 UTC = 07:00 Budapest in summer); it no-ops until you enable the
    mailer flags.
 
